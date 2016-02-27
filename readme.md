@@ -35,7 +35,7 @@ Currently only provide two interfaces to interact with AirPort Systems, i.e. (Ad
 ##### 2. Flight : A model Object represent the Flight
 ##### 3. AirportRegistry : Keep track of all the flights and the gate and their association information
 ##### 4. AdminController which can add/remove/move the gate under maintenance or vice versa
-##### 4. AirTrafficController which assign the flight to next available gate based on the size and also remove the flight and make the gate available for next flight
+##### 5. AirTrafficController which assign the flight to next available gate based on the size and also remove the flight and make the gate available for next flight
 
 ## Enhancement
 ##### 1. Design of Main Router Class which can take input from the Systems or user and pass the request to either of the Controller accordingly
