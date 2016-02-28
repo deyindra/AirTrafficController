@@ -60,7 +60,8 @@ public class MultiRequestAirTrafficControllerTest {
             t.start();
             t.join();
         }
-        Assert.assertNotNull(adminAirportController.getGateInfo(6).getFlight());
+        Assert.assertEquals(Size.MEDIUM,adminAirportController.getGateInfo(6).getFlight().getFlightSize());
+        Assert.assertEquals(Size.LARGE, adminAirportController.getGateInfo(6).getGateSize());
 
 
     }
