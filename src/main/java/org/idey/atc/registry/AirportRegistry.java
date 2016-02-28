@@ -75,7 +75,12 @@ public class AirportRegistry {
      * @return boolean
      */
     public boolean addGateToRegistry(int id, Gate gate){
-        return (gateRegistry.putIfAbsent(id, gate))==null;
+        writeLock.lock();
+        try {
+            return (gateRegistry.putIfAbsent(id, gate)) == null;
+        }finally {
+            writeLock.unlock();
+        }
     }
 
     /**
@@ -84,7 +89,12 @@ public class AirportRegistry {
      * @return boolean return true for success
      */
     public boolean removeGateFromRegistry(int id){
-        return gateRegistry.remove(id)!=null;
+        writeLock.lock();
+        try {
+            return gateRegistry.remove(id) != null;
+        }finally {
+            writeLock.unlock();
+        }
     }
 
     /**
@@ -94,7 +104,12 @@ public class AirportRegistry {
      * @return boolean
      */
     public boolean addFlightToRegistry(int id, Flight flight){
-        return (flightRegistry.putIfAbsent(id, flight))==null;
+        writeLock.lock();
+        try {
+            return (flightRegistry.putIfAbsent(id, flight)) == null;
+        }finally {
+            writeLock.unlock();
+        }
     }
 
     /**
@@ -103,7 +118,12 @@ public class AirportRegistry {
      * @return {@link Flight}
      */
     public Flight removeFlightFromRegistry(int id){
-        return flightRegistry.remove(id);
+        writeLock.lock();
+        try {
+            return flightRegistry.remove(id);
+        }finally {
+            writeLock.unlock();
+        }
     }
 
     /**
@@ -113,7 +133,12 @@ public class AirportRegistry {
      * @return true if success
      */
     public boolean assignFlightToGate(Flight f, Gate g){
-        return (flightGateRegistry.putIfAbsent(f, g))==null;
+        writeLock.lock();
+        try {
+            return (flightGateRegistry.putIfAbsent(f, g)) == null;
+        }finally {
+            writeLock.unlock();
+        }
     }
 
     /**
@@ -122,7 +147,12 @@ public class AirportRegistry {
      * @return {@link Gate}
      */
     public Gate removeFlightFromGate(Flight f){
-        return flightGateRegistry.remove(f);
+        writeLock.lock();
+        try {
+            return flightGateRegistry.remove(f);
+        }finally {
+            writeLock.unlock();
+        }
     }
 
     /**
@@ -131,7 +161,12 @@ public class AirportRegistry {
      * @return {@link Gate}
      */
     public Gate getGateInfoFromFlight(Flight f){
-        return flightGateRegistry.get(f);
+        readLock.lock();
+        try {
+            return flightGateRegistry.get(f);
+        }finally {
+            readLock.unlock();
+        }
     }
 
     /**
@@ -140,15 +175,20 @@ public class AirportRegistry {
      * @param isAvailable true if one need to add to the available gates
      * @return true if success
      */
-    public synchronized boolean assignGateToList(Gate gate, boolean isAvailable){
-        ConcurrentMap<Size, Set<Gate>> currentMap = isAvailable ?
-                availableGatesParSize : notAvailableGatesParSize;
-        Size s = gate.getGateSize();
-        Set<Gate> sets = currentMap.getOrDefault(s, new LinkedHashSet<>());
-        boolean status = sets.add(gate);
-        currentMap.put(s,sets);
-        LOGGER.info("Current Available gates per size {}",currentMap);
-        return status;
+    public boolean assignGateToList(Gate gate, boolean isAvailable){
+        writeLock.lock();
+        try {
+            ConcurrentMap<Size, Set<Gate>> currentMap = isAvailable ?
+                    availableGatesParSize : notAvailableGatesParSize;
+            Size s = gate.getGateSize();
+            Set<Gate> sets = currentMap.getOrDefault(s, new LinkedHashSet<>());
+            boolean status = sets.add(gate);
+            currentMap.put(s, sets);
+            LOGGER.info("Current Available gates per size {}", currentMap);
+            return status;
+        }finally {
+            writeLock.unlock();
+        }
     }
 
     /**
@@ -157,30 +197,50 @@ public class AirportRegistry {
      * @param isAvailable true if one need to de assign to the available gates
      * @return true if success
      */
-    public synchronized boolean removeGateFromList(Gate gate, boolean isAvailable){
-        ConcurrentMap<Size, Set<Gate>> currentMap = isAvailable ?
-                availableGatesParSize : notAvailableGatesParSize;
-        Size s = gate.getGateSize();
-        Set<Gate> sets = currentMap.get(s);
-        if(sets!=null && !sets.isEmpty()){
-            return sets.remove(gate);
+    public boolean removeGateFromList(Gate gate, boolean isAvailable){
+        writeLock.lock();
+        try {
+            ConcurrentMap<Size, Set<Gate>> currentMap = isAvailable ?
+                    availableGatesParSize : notAvailableGatesParSize;
+            Size s = gate.getGateSize();
+            Set<Gate> sets = currentMap.get(s);
+            if (sets != null && !sets.isEmpty()) {
+                return sets.remove(gate);
+            }
+            LOGGER.info("Current Available gates per size {}", currentMap);
+            return false;
+        }finally {
+            writeLock.unlock();
         }
-        LOGGER.info("Current Available gates per size {}",currentMap);
-        return false;
     }
 
     public Gate getGateInfo(int id){
-        return gateRegistry.getOrDefault(id, null);
+        readLock.lock();
+        try {
+            return gateRegistry.getOrDefault(id, null);
+        }finally {
+            readLock.unlock();
+        }
     }
 
 
 
     public Set<Gate> getAvailableGates(Size size){
-        return availableGatesParSize.getOrDefault(size,null);
+        readLock.lock();
+        try {
+            return availableGatesParSize.getOrDefault(size, null);
+        }finally {
+            readLock.unlock();
+        }
     }
 
     public Set<Gate> getNonAvailableGates(Size size){
-        return notAvailableGatesParSize.getOrDefault(size,null);
+        readLock.lock();
+        try {
+            return notAvailableGatesParSize.getOrDefault(size, null);
+        }finally {
+            readLock.unlock();
+        }
     }
 
 }
