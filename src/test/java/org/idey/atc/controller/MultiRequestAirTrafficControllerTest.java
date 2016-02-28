@@ -3,21 +3,34 @@ package org.idey.atc.controller;
 import org.idey.atc.exception.AirportControllerException;
 import org.idey.atc.model.Gate;
 import org.idey.atc.model.constant.Size;
+import org.idey.atc.registry.AirportRegistry;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.lang.reflect.Field;
 
 public class MultiRequestAirTrafficControllerTest {
     private AdminAirportController adminAirportController;
     private AirTrafficController airTrafficController;
     private Size[] sizes;
     @Before
-    public void setup(){
+    public void setup() throws NoSuchFieldException, IllegalAccessException {
+        Field instance = AirportRegistry.class.getDeclaredField("INSTANCE");
+        instance.setAccessible(true);
+        instance.set(null, null);
         adminAirportController = new AdminAirportControllerImpl();
         airTrafficController = new AirTrafficControllerImpl();
         sizes = new Size[]{Size.SMALL, Size.MEDIUM, Size.LARGE};
     }
 
+    @After
+    public void cleanup() throws NoSuchFieldException, IllegalAccessException {
+        Field instance = AirportRegistry.class.getDeclaredField("INSTANCE");
+        instance.setAccessible(true);
+        instance.set(null, null);
+    }
 
 
     @Test
